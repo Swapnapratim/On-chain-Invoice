@@ -1,0 +1,39 @@
+[submodule "lib/forge-std"]
+	path = lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "lib/openzeppelin-contracts"]
+	path = lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "lib/abdk-libraries-solidity"]
+	path = lib/abdk-libraries-solidity
+	url = https://github.com/abdk-consulting/abdk-libraries-solidity
+[submodule "lib/openzeppelin-contracts-upgradeable"]
+	path = lib/openzeppelin-contracts-upgradeable
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable
+[submodule "lib/uniswap/v2-core"]
+	path = lib/uniswap/v2-core
+	url = https://github.com/Uniswap/v2-core.git
+[submodule "lib/uniswap/v2-periphery"]
+	path = lib/uniswap/v2-periphery
+	url = https://github.com/Uniswap/v2-periphery.git
+[submodule "lib/openzeppelin-foundry-upgrades"]
+	path = lib/openzeppelin-foundry-upgrades
+	url = https://github.com/OpenZeppelin/openzeppelin-foundry-upgrades
+[submodule "infinitypools/lib/openzeppelin-contracts-upgradeable"]
+	path = infinitypools/lib/openzeppelin-contracts-upgradeable
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable
+[submodule "infinitypools/lib/abdk-libraries-solidity"]
+	path = infinitypools/lib/abdk-libraries-solidity
+	url = https://github.com/abdk-consulting/abdk-libraries-solidity
+[submodule "infinitypools/lib/v2-core"]
+	path = infinitypools/lib/v2-core
+	url = https://github.com/Uniswap/v2-core
+[submodule "zeebu-assignment/lib/forge-std"]
+	path = zeebu-assignment/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "zeebu-assignment/lib/account-abstraction"]
+	path = zeebu-assignment/lib/account-abstraction
+	url = https://github.com/eth-infinitism/account-abstraction
+[submodule "zeebu-assignment/lib/openzeppelin-contracts"]
+	path = zeebu-assignment/lib/openzeppelin-contracts
+	url = https://github.com/openzeppelin/openzeppelin-contracts
