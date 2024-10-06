@@ -14,13 +14,13 @@ contract SendPackedUserOps is Script {
     function createSignedUserOps(
             bytes memory data, 
             HelperConfig.NetworkConfig memory config,
-            address smartAccount
-            // address paymaster,
-            // bytes memory paymasterData
+            address smartAccount,
+            address paymaster,
+            bytes memory paymasterData
         ) public view returns(PackedUserOperation memory) {
         // generate unsigned data
         uint256 nonce = vm.getNonce(smartAccount) - 1;
-        PackedUserOperation memory userOp = _generateUnsignedUserOps(data, smartAccount, nonce);
+        PackedUserOperation memory userOp = _generateUnsignedUserOps(data, smartAccount, nonce, paymaster, paymasterData);
         // get user op hash 
         bytes32 userOpHash = IEntryPoint(config.entryPoint).getUserOpHash(userOp);
         bytes32 digest = userOpHash.toEthSignedMessageHash();
@@ -39,9 +39,9 @@ contract SendPackedUserOps is Script {
     function _generateUnsignedUserOps(
             bytes memory data, 
             address sender, 
-            uint256 nonce
-            // address paymaster,
-            // bytes memory paymasterData
+            uint256 nonce,
+            address paymaster,
+            bytes memory paymasterData
         ) internal pure returns (PackedUserOperation memory) {
         uint128 verificationGasLimit = 16777216;
         uint128 callGasLimit = 16777216;
@@ -49,9 +49,9 @@ contract SendPackedUserOps is Script {
         uint128 maxFeePerGas = 256;
 
         // Concatenate paymaster address with its associated data
-        // bytes memory paymasterAndData = paymaster != address(0) 
-        // ? bytes.concat(abi.encodePacked(paymaster), paymasterData)
-        // : bytes("");
+        bytes memory paymasterAndData = paymaster != address(0) 
+        ? bytes.concat(abi.encodePacked(paymaster), paymasterData)
+        : bytes("");
     
         return PackedUserOperation({
             sender: sender,
@@ -61,7 +61,7 @@ contract SendPackedUserOps is Script {
             accountGasLimits: bytes32(uint256(verificationGasLimit) << 128 | callGasLimit),
             preVerificationGas: verificationGasLimit,
             gasFees: bytes32(uint256(maxPriorityFeePerGas) << 128 | maxFeePerGas),
-            paymasterAndData: hex"",
+            paymasterAndData: paymasterData,
             signature: hex""
         });
     }

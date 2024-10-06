@@ -37,3 +37,6 @@
 [submodule "zeebu-assignment/lib/openzeppelin-contracts"]
 	path = zeebu-assignment/lib/openzeppelin-contracts
 	url = https://github.com/openzeppelin/openzeppelin-contracts
+[submodule "zeebu-assignment/lib/paymaster-examples"]
+	path = zeebu-assignment/lib/paymaster-examples
+	url = https://github.com/matter-labs/paymaster-examples
