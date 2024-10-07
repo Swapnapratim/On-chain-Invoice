@@ -16,7 +16,7 @@ contract HelperConfig is Script {
     address constant FOUNDRY_DEFAULT_ACCOUNT = address(uint160(uint256(keccak256("foundry default caller"))));
     address constant ANVIL_DEFAULT_ACCOUNT = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
-    uint256 public constant OPTIMISM_SEPOLIA_CHAIN_ID = 11155111;
+    uint256 public constant OPTIMISM_SEPOLIA_CHAIN_ID = 11155420;
     uint256 public constant ANVIL_CHAIN_ID = 31337;
     
     NetworkConfig public localNetworkConfig;

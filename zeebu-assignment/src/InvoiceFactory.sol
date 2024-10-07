@@ -5,12 +5,13 @@ import {IERC20} from "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.so
 import {Ownable} from "lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import {IInvoice} from "./interfaces/IInvoice.sol";
 
-contract InvoiceFactory is Ownable {
+contract InvoiceFactory is Ownable { // IF: 0x38A68C29fdcb361696008d7019FdCfA54AFb1502, GSN: 0x3e0Cf73Aa651fcE452Dd53346B1C80E9c7d249Bb
 
     /*//////////////////////////////////////////////////////////////
                              EVENTS
     //////////////////////////////////////////////////////////////*/
 
+    event InvoiceCreated(uint256 id);
     event InvoicePaid(address indexed customer, address indexed merchant, uint256 amount);
     event GasSponsorChanged(address indexed newSponsor);
 
@@ -21,15 +22,6 @@ contract InvoiceFactory is Ownable {
     IERC20 public immutable s_usdt; // USDT token contract
     address public gasSponsor; // Gas sponsor wallet/contract
     mapping(uint256 id => IInvoice.Invoice) public invoices;
-
-    /*//////////////////////////////////////////////////////////////
-                             MODIFIER
-    //////////////////////////////////////////////////////////////*/
-
-    modifier onlyGasSponsor() {
-        require(msg.sender == gasSponsor, "Only gas sponsor allowed");
-        _;
-    }
 
     /*//////////////////////////////////////////////////////////////
                             CONTRUCTOR
@@ -51,7 +43,7 @@ contract InvoiceFactory is Ownable {
     @notice This function is used by merchant to create an invoice. Transaction is executed by the gas station keeping the transaction completely gasless
     @param generateInvoice struct used as a parameter to avoid Stack-to-deep errors
     */
-    function createInvoice(IInvoice.GenerateInvoice memory generateInvoice) external onlyGasSponsor returns(IInvoice.Invoice memory invoice){
+    function createInvoice(IInvoice.GenerateInvoice memory generateInvoice) external returns(IInvoice.Invoice memory invoice){
         invoice.merchant = generateInvoice.merchant;
         invoice.customer = generateInvoice.customer;
         invoice.nameOfMerchant = generateInvoice.nameOfMerchant;
@@ -96,6 +88,7 @@ contract InvoiceFactory is Ownable {
         );
 
         invoices[invoice.id] = invoice;
+        emit InvoiceCreated(invoice.id);
     }
 
     /**
@@ -104,7 +97,7 @@ contract InvoiceFactory is Ownable {
     */
     function payInvoiceById(
         uint256 _id
-    ) external onlyGasSponsor {
+    ) external {
         require(_id > 0, "Invalid invoice ID");
         IInvoice.Invoice memory invoice = invoices[_id];
 
