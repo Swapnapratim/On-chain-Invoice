@@ -1,4 +1,4 @@
-[
+ const InvoiceFactoryABI = [
     {
         "type": "constructor",
         "inputs": [
@@ -11,11 +11,6 @@
                 "name": "_gasSponsor",
                 "type": "address",
                 "internalType": "address"
-            },
-            {
-                "name": "_smartAccount",
-                "type": "address",
-                "internalType": "contract SmartAccount"
             }
         ],
         "stateMutability": "nonpayable"
@@ -310,22 +305,7 @@
     },
     {
         "type": "function",
-        "name": "setGasSponsor",
-        "inputs": [
-            {
-                "name": "_newSponsor",
-                "type": "address",
-                "internalType": "address"
-            }
-        ],
-        "outputs": [
-
-        ],
-        "stateMutability": "nonpayable"
-    },
-    {
-        "type": "function",
-        "name": "smartAccount",
+        "name": "s_usdt",
         "inputs": [
 
         ],
@@ -333,30 +313,10 @@
             {
                 "name": "",
                 "type": "address",
-                "internalType": "contract SmartAccount"
+                "internalType": "contract IERC20"
             }
         ],
         "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "sponsorGas",
-        "inputs": [
-            {
-                "name": "user",
-                "type": "address",
-                "internalType": "address"
-            },
-            {
-                "name": "gasAmount",
-                "type": "uint256",
-                "internalType": "uint256"
-            }
-        ],
-        "outputs": [
-
-        ],
-        "stateMutability": "payable"
     },
     {
         "type": "function",
@@ -374,21 +334,6 @@
         "stateMutability": "nonpayable"
     },
     {
-        "type": "function",
-        "name": "usdt",
-        "inputs": [
-
-        ],
-        "outputs": [
-            {
-                "name": "",
-                "type": "address",
-                "internalType": "contract IERC20"
-            }
-        ],
-        "stateMutability": "view"
-    },
-    {
         "type": "event",
         "name": "GasSponsorChanged",
         "inputs": [
@@ -397,6 +342,19 @@
                 "type": "address",
                 "indexed": true,
                 "internalType": "address"
+            }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "InvoiceCreated",
+        "inputs": [
+            {
+                "name": "id",
+                "type": "uint256",
+                "indexed": false,
+                "internalType": "uint256"
             }
         ],
         "anonymous": false
@@ -468,3 +426,4 @@
         ]
     }
 ]
+export default InvoiceFactoryABI;

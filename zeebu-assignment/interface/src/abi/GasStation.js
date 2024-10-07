@@ -1,4 +1,4 @@
-[
+const GasStationABI  = [
     {
         "type": "constructor",
         "inputs": [
@@ -97,3 +97,4 @@
         "anonymous": false
     }
 ]
+export default GasStationABI;

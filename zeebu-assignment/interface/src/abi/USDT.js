@@ -1,4 +1,4 @@
-[
+const USDTABI  = [
 	{
 		"inputs": [
 			{
@@ -421,3 +421,6 @@
 		"type": "function"
 	}
 ]
+
+
+export default USDTABI;
