@@ -1,10 +1,10 @@
 import Web3 from 'web3';
 import { Common } from '@ethereumjs/common';
 import { privateToAddress } from 'ethereumjs-util';
-import InvoiceFactoryABI from './abi/Invoice.json' assert { type: 'json' };
-import GasStationABI from './abi/GasStation.json' assert { type: 'json' };
-import USDTABI from './abi/USDT.json' assert { type: 'json' };
-import SmartAccountABI from './abi/SmartAccount.json' assert { type: 'json' };
+import InvoiceFactoryABI from './src/abi/Invoice.json' assert { type: 'json' };
+import GasStationABI from './src/abi/GasStation' assert { type: 'json' };
+import USDTABI from './src/abi/USDT' assert { type: 'json' };
+import SmartAccountABI from './src/abi/SmartAccount.json' assert { type: 'json' };
 
 // Initialize Web3 with Optimism Sepolia provider
 const web3 = new Web3('https://opt-sepolia.g.alchemy.com/v2/inBQ-e1vFDAlCRl4Fvec26vIYNLpBVul');
