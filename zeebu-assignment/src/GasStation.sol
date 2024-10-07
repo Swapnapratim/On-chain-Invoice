@@ -2,22 +2,25 @@
 pragma solidity ^0.8.0;
 
 contract GasStation {
-    address public owner;
-
     event GasSponsorship(address indexed user, uint256 gasUsed, address indexed targetContract, bytes data);
 
-    receive() external payable {}
+    address public owner;
 
     constructor() {
         owner = msg.sender;
     }
+    receive() external payable {}
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Not the owner");
         _;
     }
 
-    // Function to sponsor any transaction
+    /**
+    @notice This is the core function of the GasStation contract. It is used to sponsor any kind of transaction using this gas station contract
+    @param data The function data to be executed via this sponsored call
+    @param gasLimit Setting sufficient gas limit to be used, generally to be set to a high number, excess gas shall be refunded back.
+    */
     function sponsorTransaction(
         address targetContract,
         bytes calldata data,
@@ -39,9 +42,6 @@ contract GasStation {
 
         emit GasSponsorship(msg.sender, gasUsed, targetContract, data);
     }
-
-    // Function to add native token balance to sponsor gas
-    function deposit() external payable {}
 
     // Withdraw funds from gas station
     function withdraw(uint256 amount) external onlyOwner {

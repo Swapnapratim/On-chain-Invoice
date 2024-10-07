@@ -11,7 +11,21 @@ import {IEntryPoint} from "lib/account-abstraction/contracts/interfaces/IEntryPo
 
 contract SmartAccount is IAccount, Ownable {
 
+    /*//////////////////////////////////////////////////////////////
+                             ERRORS
+    //////////////////////////////////////////////////////////////*/
+
+    error SmartAccount__ExecuteFailed();
+
+    /*//////////////////////////////////////////////////////////////
+                             STATE
+    //////////////////////////////////////////////////////////////*/
+
     IEntryPoint private immutable i_entryPoint;
+
+    /*//////////////////////////////////////////////////////////////
+                            MODIFIERS
+    //////////////////////////////////////////////////////////////*/    
 
     modifier onlyEntryPoint() {
         require(msg.sender == address(i_entryPoint), "only entrypoint");
@@ -21,11 +35,19 @@ contract SmartAccount is IAccount, Ownable {
         require(msg.sender == address(i_entryPoint) || msg.sender == owner(), "only entrypoint or owner");
         _;
     }
+
+    /*//////////////////////////////////////////////////////////////
+                    CONSTRUCTOR and RECEIVE/FALLBACK
+    //////////////////////////////////////////////////////////////*/
     constructor(address _entryPoint) Ownable(msg.sender) {
         i_entryPoint = IEntryPoint(_entryPoint);
     }
 
     receive() external payable {}
+
+    /*//////////////////////////////////////////////////////////////
+                             EXTERNAL
+    //////////////////////////////////////////////////////////////*/
 
     function execute(
         address target,
@@ -34,7 +56,7 @@ contract SmartAccount is IAccount, Ownable {
     ) external onlyEntryPointOrOwner {
         (bool success, ) = target.call{value: value}(data);
         if(!success) {
-            revert();
+            revert SmartAccount__ExecuteFailed();
         }
     }
 
@@ -44,11 +66,15 @@ contract SmartAccount is IAccount, Ownable {
         uint256 missingAccountFunds
     ) external onlyEntryPoint returns(uint256 validationData) {
         // validate the signature
-        // NOTE: for this task, We are assuming that the signature is valid if its the Smart Account owner
+        // NOTE: for ease of this task, We are assuming that the signature is valid if its the Smart Account owner
         validationData = _validateSignature(userOp, userOpHash);
         // validateNonce -> done by entrypoint contract
         _payPrefund(missingAccountFunds);
     }
+
+    /*//////////////////////////////////////////////////////////////
+                        INTERNAL and PRIVATE
+    //////////////////////////////////////////////////////////////*/
 
     // EIP-191 version
     function _validateSignature(
