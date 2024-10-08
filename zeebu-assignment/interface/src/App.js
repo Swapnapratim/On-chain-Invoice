@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { ethers } from 'ethers';
 import { Wallet, JsonRpcProvider, Contract, BigNumber, AbiCoder } from 'ethers';
 import InvoiceFactoryABI from './abi/Invoice.js';
@@ -7,19 +9,23 @@ import USDTABI from './abi/USDT.js';
 import SmartAccountABI from './abi/SmartAccount.js';
 import './App.css';
 
-const InvoiceFactoryAddress = "0x18C2C5eECE185851835F5b6490Ac0FD3b036f719";
-const GasStationAddress = "0xbeAd97F95B7dDc8da34a388c3eD3e3954821f71B";
-const USDTAddress = "0x884ea8fb01727a643cbc9100b7eced0648f15963";
-const SmartAccountAddress = "0x6498d6059e5D42a20Af5500CB7eE3FF11a7162fD"; 
+const InvoiceFactoryAddress = ethers.getAddress("0x8DD4f74c9487592e60a18e269eEAbB077049d6f0");
+const GasStationAddress = ethers.getAddress("0x7401770d7DcA314332Db3eca9d718A5Bf5219Ad5");
+const USDTAddress = ethers.getAddress("0x884ea8fb01727a643cbc9100b7eced0648f15963");
+const SmartAccountAddress = ethers.getAddress("0x5282e301214cf0A95CEf8E347764c4Dddd867d62");
 
 // Admin private key
-const adminPrivateKey = /* YOUR_ADMIN_PRIVATE_KEY */;
+const adminPrivateKey = /*ADD YOUR ADMIN PRIVATE KEY HERE OR IMPORT FROM .env FILE*/;
 
 // Alchemy Optimism Sepolia provider URL
-const alchemyProviderURL = /* YOUR_OPTIMISM_SEPOLIA_PROVIDER_URL */;
+const providerURL = /*ADD YOUR PROVIDER URL HERE OR IMPORT FROM .env FILE*/;
 
 // Create an ethers provider with the Alchemy Optimism Sepolia URL
-const provider = new JsonRpcProvider(alchemyProviderURL);
+const provider = new JsonRpcProvider(providerURL, {
+  chainId: 11155420,
+  name: 'optimism-sepolia',
+  ensAddress: null
+});
 
 // Initialize Wallet with admin private key
 const wallet = new Wallet(adminPrivateKey, provider);
@@ -37,6 +43,12 @@ function App() {
   const [invoiceDetails, setInvoiceDetails] = useState(null);
   const [transactionHash, setTransactionHash] = useState('');
   const [error, setError] = useState(null);
+  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
+  const [invoiceCreated, setInvoiceCreated] = useState(false); 
+  
+  const [isPayingInvoice, setIsPayingInvoice] = useState(false); 
+  const [invoicePaid, setInvoicePaid] = useState(false); 
+
 
   // Utility function to send transactions
   const sendTransaction = async (txData) => {
@@ -55,23 +67,30 @@ function App() {
       const signedTx = await signer.sendTransaction(tx);
       const receipt = await signedTx.wait();
       setTransactionHash(receipt.transactionHash);
+      toast.success(`Transaction successful: ${receipt.transactionHash}`);
       console.log('Transaction successful:', receipt.transactionHash);
       return receipt;
     } catch (error) {
       setError('Transaction error: ' + error.message);
+      toast.error(`Transaction error: ${error.message}`);
       throw error;
     }
   };
 
   // Create invoice function
   const createInvoice = async () => {
+    setIsCreatingInvoice(true); 
+    setInvoiceCreated(false); 
     try {
       const invoiceFactoryContract = new Contract(InvoiceFactoryAddress, InvoiceFactoryABI, wallet);
+
+      const productCostPerUnitInUnits = ethers.parseUnits(productCostPerUnit, 18); // Adjusted due to Mock token decimals, Adust as per needed @dev
+
       const generateInvoice = {
         merchant,
         customer,
         nameOfMerchant,
-        productCostPerUnit,
+        productCostPerUnit: productCostPerUnitInUnits,
         quantity,
         taxRateInBps,
         discountInBps,
@@ -91,7 +110,9 @@ function App() {
       if (event) {
           const decodedEvent = invoiceFactoryContract.interface.decodeEventLog('InvoiceCreated', event.data);
           const invoiceId = decodedEvent.id.toString();
-          setInvoiceId(invoiceId);  // Store the invoiceId in state to display in the UI
+          setInvoiceId(invoiceId);  
+          setInvoiceCreated(true);
+          toast.success(`Invoice created successfully with ID: ${invoiceId}`); 
           console.log('Invoice created successfully with ID:', invoiceId);
       } else {
           console.log('InvoiceCreated event not found in the logs');
@@ -99,11 +120,16 @@ function App() {
       return receipt;
     } catch (error) {
       setError('Error creating invoice: ' + error.message);
+      toast.error(`Error creating invoice: ${error.message}`);
       throw error;
+    } finally {
+      setIsCreatingInvoice(false); // Stop loading
     }
   };
   
   const payInvoice = async () => {
+    setIsPayingInvoice(true); 
+    setInvoicePaid(false);
     try {
         const abiCoder = new AbiCoder();
         console.log("Starting invoice payment process...");
@@ -120,76 +146,84 @@ function App() {
         const amountToBePaid = invoice.totalAmountIncludingTax;
         console.log("Amount to be paid:", amountToBePaid.toString());
 
-        // STEP 1: Smart Account approves Invoice Factory for USDT transfer
+        // Smart Account approves Invoice Factory for USDT transfer
         console.log("Preparing USDT approval for Invoice Factory...");
         const approveData = usdtContract.interface.encodeFunctionData('approve', [
             InvoiceFactoryAddress, 
             amountToBePaid
         ]);
 
-        const approveTx = {
-            target: USDTAddress,
-            value: 0n,
-            data: approveData
+        // Create the execute call for the approval
+        const approveCallData = smartAccountContract.interface.encodeFunctionData('execute', [
+          USDTAddress,          // target (USDT contract)
+          0n,                   // value (0)
+          approveData           // data (approve call)
+        ]);
+
+        // Prepare the transaction to call sponsorTransaction on GasStation for approval
+        console.log("Initiating sponsored approval transaction through GasStation...");
+        const sponsorApproveTxData = gasStationContract.interface.encodeFunctionData('sponsorTransaction', [
+            SmartAccountAddress,   // target (SmartAccount)
+            approveCallData,      // data (wrapped approve call)
+            2000000n               // gas limit
+        ]);
+
+        const approveTxData = {
+            to: GasStationAddress,
+            data: sponsorApproveTxData,
+            from: wallet.address,  // Set the sender address
         };
 
-        // Execute approval through Smart Account
-        const approveReceipt = await smartAccountContract.execute(
-            approveTx.target,
-            approveTx.value,
-            approveTx.data
-        );
-        await approveReceipt.wait();
-        console.log('USDT approved for Invoice Factory');
+        // Send the approval transaction via sendTransaction
+        const approveReceipt = await sendTransaction(approveTxData);
+        toast.success(`USDT approved for Invoice Factory, transaction submitted: ${approveReceipt.transactionHash}`);
+        console.log('USDT approved for Invoice Factory, transaction submitted:', approveReceipt.transactionHash);
 
-        // STEP 2: Prepare the payInvoiceById call
-        console.log("Preparing payInvoiceById call...");
+
+        // Prepare the payInvoiceById call
         const payInvoiceData = invoiceFactoryContract.interface.encodeFunctionData('payInvoiceById', [
             invoiceId
         ]);
-        console.log("Encoded payInvoiceById data:", payInvoiceData);
 
-        // STEP 3: Create the execute call for payInvoiceById
+        // Create the execute call for payInvoiceById
         const wrappedPaymentData = smartAccountContract.interface.encodeFunctionData('execute', [
             InvoiceFactoryAddress,  // target (InvoiceFactory)
             0,                      // value (0)
             payInvoiceData          // data (payInvoiceById call)
         ]);
-
-        // STEP 4: Execute the payment transaction through GasStation
+        
+        // Prepare the transaction to call sponsorTransaction on GasStation
         console.log("Initiating sponsored payment transaction through GasStation...");
-        const paymentReceipt = await gasStationContract.sponsorTransaction(
-            SmartAccountAddress,
-            wrappedPaymentData,
-            2000000n
-        );
+        const sponsorTxData = gasStationContract.interface.encodeFunctionData('sponsorTransaction', [
+            SmartAccountAddress,   // target (SmartAccount)
+            wrappedPaymentData,    // data (wrapped call data)
+            2000000n               // gas limit
+        ]);
 
-        console.log('Transaction submitted:', paymentReceipt.hash);
-        const confirmedReceipt = await paymentReceipt.wait();
-        console.log('Transaction confirmed:', confirmedReceipt);
+        const txData = {
+            to: GasStationAddress,
+            data: sponsorTxData,
+            from: wallet.address,  // Set the sender address
+        };
+
+        // Send the transaction via sendTransaction
+        const receipt = await sendTransaction(txData);
+        setInvoicePaid(true);
+        toast.success(`Invoice Payment Successful: ${receipt.hash}`);
+        toast.error(`Error paying invoice: ${error.message}`);
+        console.log('Transaction submitted:', receipt.hash);
+        // NOTE: No need to wait for the receipt here, as receipt.wait() already done in sendTransaction
 
         // Update UI
-        setTransactionHash(paymentReceipt.hash);
-        return confirmedReceipt;
-
-    } catch (error) {
-        console.error('Payment error:', error);
-        setError(`Error paying invoice: ${error.message}`);
-        throw error;
-    }
-};
-
-// Helper function to format error messages
-const formatError = (error) => {
-    if (error.code === 'ACTION_REJECTED') {
-        return 'Transaction rejected by user';
-    }
-    if (error.error?.message) {
-        return error.error.message;
-    }
-    return error.message || 'Unknown error occurred';
-};
-  
+        setTransactionHash(receipt.hash);
+      } catch (error) {
+          console.error('Payment error:', error);
+          setError(`Error paying invoice: ${error.message}`);
+          throw error;
+      } finally {
+        setIsPayingInvoice(false); // Stop loading
+      }
+  };
 
   // View invoice function
   const viewInvoice = async () => {
@@ -248,9 +282,7 @@ const formatError = (error) => {
 
   return (
     <div className="App">
-      <h1>Zeebu Invoice DApp</h1>
-
-      {/* Create Invoice Section */}
+      <h1>ZeebuPay</h1>
       <div className="form-container">
         <h2>Create Invoice</h2>
         <input placeholder="Merchant" value={merchant} onChange={(e) => setMerchant(e.target.value)} />
@@ -261,14 +293,32 @@ const formatError = (error) => {
         <input placeholder="Tax Rate (bps)" value={taxRateInBps} onChange={(e) => setTaxRateInBps(e.target.value)} />
         <input placeholder="Discount (bps)" value={discountInBps} onChange={(e) => setDiscountInBps(e.target.value)} />
         <input placeholder="GSTIN of Merchant" value={gstinOfMerchant} onChange={(e) => setGstinOfMerchant(e.target.value)} />
-        <button onClick={createInvoice}>Create Invoice</button>
+        <button
+          onClick={createInvoice}
+          disabled={isCreatingInvoice}  
+          style={{
+            backgroundColor: invoiceCreated ? 'green' : '',
+            cursor: isCreatingInvoice ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {isCreatingInvoice ? 'Creating Invoice...' : invoiceCreated ? 'Invoice Created!' : 'Create Invoice'}
+        </button>
       </div>
 
       {/* Pay Invoice Section */}
       <div className="form-container">
         <h2>Pay Invoice</h2>
         <input placeholder="Invoice ID" value={invoiceId} onChange={(e) => setInvoiceId(e.target.value)} />
-        <button onClick={payInvoice}>Pay Invoice</button>
+        <button
+          onClick={payInvoice}
+          disabled={isPayingInvoice}  
+          style={{
+            backgroundColor: invoicePaid ? 'green' : '',
+            cursor: isPayingInvoice ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {isPayingInvoice ? 'Paying Invoice...' : invoicePaid ? `Invoice #${invoiceId} Paid!` : 'Pay Invoice'}
+        </button>
       </div>
 
       {/* View Invoice Section */}
@@ -286,8 +336,8 @@ const formatError = (error) => {
 
       {/* Test Invoice Section */}
       <div className="form-container">
-        <h2>Test Invoice</h2>
-        <button onClick={testInvoice}>Create Test Invoice</button>
+        <h2>Test Invoice Creation With Script Params</h2>
+        <button onClick={testInvoice}>Create Invoice</button>
       </div>
 
       {/* Display Transaction and Error Messages */}
