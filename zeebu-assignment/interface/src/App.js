@@ -150,10 +150,11 @@ function App() {
         console.log("Encoded payInvoiceById data:", payInvoiceData);
 
         // STEP 3: Create the execute call for payInvoiceById
-        const wrappedPaymentData = abiCoder.encode(
-            ['address', 'uint256', 'bytes'],
-            [InvoiceFactoryAddress, 0, payInvoiceData]
-        );
+        const wrappedPaymentData = smartAccountContract.interface.encodeFunctionData('execute', [
+            InvoiceFactoryAddress,  // target (InvoiceFactory)
+            0,                      // value (0)
+            payInvoiceData          // data (payInvoiceById call)
+        ]);
 
         // STEP 4: Execute the payment transaction through GasStation
         console.log("Initiating sponsored payment transaction through GasStation...");
@@ -201,12 +202,12 @@ const formatError = (error) => {
             merchant: invoice.merchant,
             customer: invoice.customer,
             nameOfMerchant: invoice.nameOfMerchant,
-            productCostPerUnit: invoice.productCostPerUnit.toString(),  // Convert BigInt to string
-            quantity: invoice.quantity.toString(),  // Convert BigInt to string
-            taxRateInBps: invoice.taxRateInBps.toString(),  // Convert BigInt to string
-            discountInBps: invoice.discountInBps.toString(),  // Convert BigInt to string
-            gstinOfMerchant: invoice.gstinOfMerchant.toString(),  // Convert BigInt to string
-            totalAmountIncludingTax: invoice.totalAmountIncludingTax.toString()  // Convert BigInt to string
+            productCostPerUnit: invoice.productCostPerUnit.toString(),  
+            quantity: invoice.quantity.toString(),  
+            taxRateInBps: invoice.taxRateInBps.toString(), 
+            discountInBps: invoice.discountInBps.toString(), 
+            gstinOfMerchant: invoice.gstinOfMerchant.toString(),  
+            totalAmountIncludingTax: invoice.totalAmountIncludingTax.toString()  
         };
 
         setInvoiceDetails(formattedInvoice);  // Store the formatted invoice details in the state
