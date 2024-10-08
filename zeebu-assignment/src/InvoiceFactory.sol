@@ -4,6 +4,13 @@ pragma solidity 0.8.24;
 import {IERC20} from "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {Ownable} from "lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import {IInvoice} from "./interfaces/IInvoice.sol";
+
+/*
+@dev This contract is responsible for creating and paying invoices. 
+@notice Keeps track of invoices through invoice id which is unique to every customer
+@author Swapnapratim
+*/
+
 contract InvoiceFactory is Ownable { 
 
     /*//////////////////////////////////////////////////////////////
