@@ -30,8 +30,10 @@ contract TestInvoice is Test {
     uint256 userKey;
     address payable randomUser;
     address payable merchant;
+    address deployer;
 
     function setUp() public {
+        deployer = msg.sender; // This will be foundry's default deployer address
         config = new HelperConfig();
         deploySmartAccount = new DeploySmartAccount();
         sendPackedUserOps = new SendPackedUserOps();
@@ -172,7 +174,7 @@ contract TestInvoice is Test {
             invoiceCallData          // data
         );
 
-        vm.startPrank(address(gasStation));
+        vm.startPrank(deployer);
         // Use the wrapped call data when sponsoring the transaction
         gasStation.sponsorTransaction(
             address(smartAccount),    // target is the smart account
