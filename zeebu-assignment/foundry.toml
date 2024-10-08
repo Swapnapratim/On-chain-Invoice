@@ -1,5 +1,6 @@
 [profile.default]
 src = "src"
+auto_detect_solc = true
 out = "out"
 libs = ["lib"]
 remappings = ["@openzeppelin/contracts=lib/openzeppelin-contracts/contracts"]

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.24;
 
 contract GasStation {
     event GasSponsorship(address indexed user, uint256 gasUsed, address indexed targetContract, bytes data);
