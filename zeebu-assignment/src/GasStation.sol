@@ -27,24 +27,13 @@ contract GasStation {
         bytes calldata data,
         uint256 gasLimit
     ) external {
-        console.log("inside sponsorTransaction");
         uint256 initialGas = gasleft();
-        console.log("initialGas", initialGas);
         // Execute the target function call
-        console.log("executing external call");
         (bool success, ) = targetContract.call{gas: gasLimit}(data);
-        console.logBool(success);
-        console.log("executed external call");
         require(success, "Transaction failed");
 
         // Calculate gas used
         uint256 gasUsed = initialGas - gasleft();
-        require(gasUsed <= gasLimit, "Gas used exceeds gas limit");
-
-        // Pay the gas fee (this contract must have sufficient balance)
-        (bool reimbursementSuccess, ) = msg.sender.call{value: gasUsed * tx.gasprice}("");
-        require(reimbursementSuccess, "Failed to reimburse gas");
-
         emit GasSponsorship(msg.sender, gasUsed, targetContract, data);
     }
 
