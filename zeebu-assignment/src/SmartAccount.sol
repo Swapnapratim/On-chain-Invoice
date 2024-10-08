@@ -9,6 +9,12 @@ import {ECDSA} from "lib/openzeppelin-contracts/contracts/utils/cryptography/ECD
 import {SIG_VALIDATION_FAILED, SIG_VALIDATION_SUCCESS} from "lib/account-abstraction/contracts/core/Helpers.sol";
 import {IEntryPoint} from "lib/account-abstraction/contracts/interfaces/IEntryPoint.sol"; 
 
+/*
+@dev This contract is a minimalistic smart account wallet that follows ERC-4337 standard.
+@notice User Operation is validated by verifying if its the smart account owner for ease of use 
+@author Swapnapratim
+*/
+
 contract SmartAccount is IAccount, Ownable {
 
     /*//////////////////////////////////////////////////////////////
