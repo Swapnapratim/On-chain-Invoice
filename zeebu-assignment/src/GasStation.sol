@@ -2,6 +2,12 @@
 pragma solidity 0.8.24;
 import "forge-std/console.sol";
 
+/*
+@dev This contract is responsible for sponsoring any kind of transactions accross the blockchain for gas. 
+@notice This contract is called by a relay address which can be an admin EOA. Excess funds can be withdrawn to owner only. 
+@author Swapnapratim
+*/
+
 contract GasStation {
     event GasSponsorship(address indexed user, uint256 gasUsed, address indexed targetContract, bytes data);
 
