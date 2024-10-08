@@ -58,6 +58,8 @@ Considering you are in the root directory of the project, the project structure 
 - USDT token address of desired test net
 - EntryPoint contract address
 
+Be sure to add your RPC_URL and PRIVATEE_KEY at the required fields here: `interface/src/App.js`
+
 ## Instructions to start local server: 
 1. cd into Interface (cd interface)
 2. npm install
@@ -85,9 +87,10 @@ This will display the Invoice details
 This is a test function button that will generate an invoice as per the parameters specified in the script interface/src/App.js
 
 ## Source Contract Addresses
-   - InvoiceFactory = "0x18C2C5eECE185851835F5b6490Ac0FD3b036f719"
-   - GasStation = "0xbeAd97F95B7dDc8da34a388c3eD3e3954821f71B"
-   - SmartAccount = "0x6498d6059e5D42a20Af5500CB7eE3FF11a7162fD"
+   - InvoiceFactory = "0x8DD4f74c9487592e60a18e269eEAbB077049d6f0"
+   - GasStation = "0x7401770d7DcA314332Db3eca9d718A5Bf5219Ad5"
+   - SmartAccount = "0x5282e301214cf0A95CEf8E347764c4Dddd867d62"
+   - MockUSDT = "0x884Ea8FB01727A643cbc9100b7eCEd0648f15963"
 
 ## Run Tests
 1. cd into the root directory
