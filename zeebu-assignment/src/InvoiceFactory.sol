@@ -4,8 +4,7 @@ pragma solidity 0.8.24;
 import {IERC20} from "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {Ownable} from "lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import {IInvoice} from "./interfaces/IInvoice.sol";
-
-contract InvoiceFactory is Ownable { // IF: 0x38A68C29fdcb361696008d7019FdCfA54AFb1502, GSN: 0x3e0Cf73Aa651fcE452Dd53346B1C80E9c7d249Bb
+contract InvoiceFactory is Ownable { 
 
     /*//////////////////////////////////////////////////////////////
                              EVENTS
@@ -98,13 +97,9 @@ contract InvoiceFactory is Ownable { // IF: 0x38A68C29fdcb361696008d7019FdCfA54A
     function payInvoiceById(
         uint256 _id
     ) external {
-        console.log("invoice id: ", _id);
         require(_id > 0, "Invalid invoice ID");
         IInvoice.Invoice memory invoice = invoices[_id];
-        console.log("fetched invoice for the customer");
         bool success = s_usdt.transferFrom(invoice.customer, invoice.merchant, invoice.totalAmountIncludingTax);
-        console.log("transferred USDT to merchant");
-        console.logBool(success);
         if(success) {
             delete invoices[_id];
             emit InvoicePaid(invoice.customer, invoice.merchant, invoice.totalAmountIncludingTax);
@@ -175,5 +170,13 @@ contract InvoiceFactory is Ownable { // IF: 0x38A68C29fdcb361696008d7019FdCfA54A
         }
 
         return invoiceId;
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                                SETTERS
+    //////////////////////////////////////////////////////////////*/
+
+    function setGasSponsor(address _gasSponsor) external onlyOwner {
+        gasSponsor = _gasSponsor;
     }
 }
