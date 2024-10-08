@@ -29,19 +29,18 @@
    |
    | (5) Calculate gas used
    |
-   | (6) Reimburse gas fee
    |
-   | (7) Emit gas sponsorship event
+   | (6) Emit gas sponsorship event
    |
    v
 [Merchant]
    |
-   | (8) Receive USDT payment
+   | (7) Receive USDT payment
    |
    v
 [User]
    |
-   | (9) Transaction complete
+   | (8) Transaction complete
 ```
 
 ## Project Structure: 
