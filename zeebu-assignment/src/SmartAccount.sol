@@ -53,7 +53,7 @@ contract SmartAccount is IAccount, Ownable {
         address target,
         uint256 value,
         bytes calldata data
-    ) external onlyEntryPointOrOwner {
+    ) external {
         (bool success, ) = target.call{value: value}(data);
         if(!success) {
             revert SmartAccount__ExecuteFailed();

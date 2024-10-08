@@ -147,6 +147,7 @@ contract TestInvoice is Test {
             discountInBps: 0,
             gstinOfMerchant: 1234567890
         });
+        
         // Create the invoice
         vm.prank(address(gasStation));
         IInvoice.Invoice memory invoice = invoiceFactory.createInvoice(generateInvoice);
@@ -157,14 +158,27 @@ contract TestInvoice is Test {
         vm.prank(address(smartAccount));
         usdt.approve(address(invoiceFactory), amountToBePaid);
 
-        // Create the call to Invoice.payInvoiceById()
-        bytes memory data = abi.encodeWithSelector(
+        // First create the payInvoiceById call data
+        bytes memory invoiceCallData = abi.encodeWithSelector(
             InvoiceFactory.payInvoiceById.selector,
             invoice.id
         );
 
+        // Then wrap it in the smart account's execute call
+        bytes memory wrappedCallData = abi.encodeWithSelector(
+            SmartAccount.execute.selector,
+            address(invoiceFactory),  // target
+            0,                        // value
+            invoiceCallData          // data
+        );
+
         vm.startPrank(address(gasStation));
-        gasStation.sponsorTransaction(address(invoiceFactory), data, 100000); // Adjust gas limit as needed
+        // Use the wrapped call data when sponsoring the transaction
+        gasStation.sponsorTransaction(
+            address(smartAccount),    // target is the smart account
+            wrappedCallData,         // using the wrapped call data
+            2000000                  // gas limit
+        );
         vm.stopPrank();
 
         // Verify transfer

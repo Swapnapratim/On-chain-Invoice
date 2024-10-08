@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ethers } from 'ethers';
-import { Wallet, JsonRpcProvider, Contract, BigNumber } from 'ethers';
+import { Wallet, JsonRpcProvider, Contract, BigNumber, AbiCoder } from 'ethers';
 import InvoiceFactoryABI from './abi/Invoice.js';
 import GasStationABI from './abi/GasStation.js';
 import USDTABI from './abi/USDT.js';
@@ -10,7 +10,7 @@ import './App.css';
 const InvoiceFactoryAddress = "0x18C2C5eECE185851835F5b6490Ac0FD3b036f719";
 const GasStationAddress = "0xbeAd97F95B7dDc8da34a388c3eD3e3954821f71B";
 const USDTAddress = "0x884ea8fb01727a643cbc9100b7eced0648f15963";
-const SmartAccountAddress = "0x457109e25170AC1109533ab035F28bFf0755335D"; // 2056221913
+const SmartAccountAddress = "0x6498d6059e5D42a20Af5500CB7eE3FF11a7162fD"; 
 
 // Admin private key
 const adminPrivateKey = 'e4c01e520d38ef61ddb5a75eb14d0aa014c8da0f615fbdece2c94cd4ae9be0c0';
@@ -102,176 +102,92 @@ function App() {
       throw error;
     }
   };
-
-  // Pay invoice function
-  // const payInvoice = async () => {
-  //   try {
-  //     const invoiceFactoryContract = new Contract(InvoiceFactoryAddress, InvoiceFactoryABI, wallet);
-  //     const gasStationContract = new Contract(GasStationAddress, GasStationABI, wallet);
-  //     const usdtContract = new Contract(USDTAddress, USDTABI, wallet);
-
-  //     const invoice = await invoiceFactoryContract.invoices(invoiceId);
-  //     const amountToBePaid = invoice.totalAmountIncludingTax;
-
-  //     // Approve USDT transfer
-  //     const approveTx = {
-  //       to: USDTAddress,
-  //       data: usdtContract.interface.encodeFunctionData('approve', [SmartAccountAddress, amountToBePaid]), // Corrected usage
-  //       from: SmartAccountAddress,
-  //   };    
-  //     await sendTransaction(approveTx);
-  //     console.log('USDT approved for Invoice Payment');
-
-  //     // Pay invoice
-  //     const payTx = {
-  //       to: GasStationAddress,
-  //       data: gasStationContract.interface.encodeFunctionData('sponsorTransaction', [
-  //         InvoiceFactoryAddress,
-  //         invoiceFactoryContract.interface.encodeFunctionData('payInvoiceById', [invoiceId]), // Use encodeFunctionData for the payInvoiceById function
-  //         200000
-  //       ]),
-  //       from: SmartAccountAddress,
-  //     };
-  //     const receipt = await sendTransaction(payTx);
-  //     console.log('Invoice paid successfully:', receipt.transactionHash);
-  //     return receipt;
-  //   } catch (error) {
-  //     setError('Error paying invoice: ' + error.message);
-  //     throw error;
-  //   }
-  // };
-
-  // const payInvoice = async () => {
-  //   console.log("here");
-  //   try {
-  //     console.log("Starting invoice payment process...");
-  //     const invoiceFactoryContract = new Contract(InvoiceFactoryAddress, InvoiceFactoryABI, wallet);
-  //     const gasStationContract = new Contract(GasStationAddress, GasStationABI, wallet);
-  //     const usdtContract = new Contract(USDTAddress, USDTABI, wallet);
-  
-  //     // Get invoice details
-  //     const invoice = await invoiceFactoryContract.invoices(invoiceId);
-  //     console.log("Retrieved invoice:", invoice);
-  //     const amountToBePaid = invoice.totalAmountIncludingTax;
-  //     console.log("Amount to be paid:", amountToBePaid.toString());
-  
-  //     // First transaction: Approve USDT transfer
-  //     console.log("Initiating USDT approval...");
-  //     const approveTx = {
-  //       to: USDTAddress,
-  //       data: usdtContract.interface.encodeFunctionData('approve', [SmartAccountAddress, amountToBePaid]),
-  //       from: SmartAccountAddress,
-  //     };
-  //     const approveReceipt = await sendTransaction(approveTx);
-  //     console.log('USDT approved for Invoice Payment', approveReceipt);
-  
-  //     // Second transaction: Pay invoice through gas station
-  //     console.log("Initiating payment transaction...");
-  //     const paymentData = invoiceFactoryContract.interface.encodeFunctionData('payInvoiceById', [invoiceId]);
-  //     const gasEstimate = 200000; // You might want to estimate this dynamically
-  
-  //     const payTx = {
-  //       to: GasStationAddress,
-  //       data: gasStationContract.interface.encodeFunctionData('sponsorTransaction', [
-  //         InvoiceFactoryAddress,
-  //         paymentData,
-  //         gasEstimate
-  //       ]),
-  //       from: SmartAccountAddress,
-  //     };
-  
-  //     const receipt = await sendTransaction(payTx);
-  //     console.log('Invoice paid successfully:', receipt.transactionHash);
-  //     setTransactionHash(receipt.transactionHash);
-  //     return receipt;
-  //   } catch (error) {
-  //     console.error('Payment error:', error);
-  //     setError('Error paying invoice: ' + error.message);
-  //     throw error;
-  //   }
-  // };
   
   const payInvoice = async () => {
     try {
-      console.log("Starting invoice payment process...");
-  
-      // Contracts
-      const invoiceFactoryContract = new Contract(InvoiceFactoryAddress, InvoiceFactoryABI, wallet);
-      const gasStationContract = new Contract(GasStationAddress, GasStationABI, wallet);
-      const usdtContract = new Contract(USDTAddress, USDTABI, wallet);
-      const smartAccountContract = new Contract(SmartAccountAddress, SmartAccountABI, wallet);
-  
-      // Get invoice details
-      const invoice = await invoiceFactoryContract.invoices(invoiceId);
-      console.log("Retrieved invoice:", invoice);
-      const amountToBePaid = invoice.totalAmountIncludingTax;
-      console.log("Amount to be paid:", amountToBePaid.toString());
-  
-      // First transaction: Approve USDT transfer using SmartAccount's execute function
-      console.log("Initiating USDT approval through SmartAccount...");
-      const approveData = usdtContract.interface.encodeFunctionData('approve', [SmartAccountAddress, amountToBePaid]);
-      const approveData2 = usdtContract.interface.encodeFunctionData('approve', [InvoiceFactoryAddress, amountToBePaid]);
-      const approveTx = {
-        target: USDTAddress,
-        value: 0n,
-        data: approveData
-      };
+        const abiCoder = new AbiCoder();
+        console.log("Starting invoice payment process...");
 
+        // Initialize contracts
+        const invoiceFactoryContract = new Contract(InvoiceFactoryAddress, InvoiceFactoryABI, wallet);
+        const gasStationContract = new Contract(GasStationAddress, GasStationABI, wallet);
+        const usdtContract = new Contract(USDTAddress, USDTABI, wallet);
+        const smartAccountContract = new Contract(SmartAccountAddress, SmartAccountABI, wallet);
 
-      // Step 1: Execute the first approval transaction and wait for confirmation
-      const approveReceipt = await smartAccountContract.execute(approveTx.target, approveTx.value, approveTx.data);
-      await approveReceipt.wait(); // Wait for the transaction to be confirmed
-      console.log('USDT approved for SmartAccount');
+        // Get invoice details
+        const invoice = await invoiceFactoryContract.invoices(invoiceId);
+        console.log("Retrieved invoice:", invoice);
+        const amountToBePaid = invoice.totalAmountIncludingTax;
+        console.log("Amount to be paid:", amountToBePaid.toString());
 
-      // Step 2: Execute the second approval transaction
-      console.log("Initiating second USDT approval...");
-      const approveTx2 = {
-          target: USDTAddress,
-          value: 0n,
-          data: approveData2
-      };
+        // STEP 1: Smart Account approves Invoice Factory for USDT transfer
+        console.log("Preparing USDT approval for Invoice Factory...");
+        const approveData = usdtContract.interface.encodeFunctionData('approve', [
+            InvoiceFactoryAddress, 
+            amountToBePaid
+        ]);
 
-      const approveReceipt2 = await smartAccountContract.execute(approveTx2.target, approveTx2.value, approveTx2.data);
-      await approveReceipt2.wait(); // Wait for the transaction to be confirmed
-      console.log('USDT approved for Invoice Payment');
-  
-      // Step 3: Prepare payInvoiceById data to be called by SmartAccount
-      const payInvoiceData = invoiceFactoryContract.interface.encodeFunctionData('payInvoiceById', [invoiceId]);
-      console.log("Encoded data for payInvoiceById:", payInvoiceData);
-      
-      // Estimate gas for payInvoiceById function
-      const gasEstimate = await invoiceFactoryContract.payInvoiceById.estimateGas(invoiceId);
-      console.log("Gas Estimate for payInvoiceById:", gasEstimate.toString());
+        const approveTx = {
+            target: USDTAddress,
+            value: 0n,
+            data: approveData
+        };
 
-      // Step 4: GasStation sponsors the gas and executes payInvoiceById via SmartAccount
-      console.log("Initiating gas sponsorship via GasStation...");
+        // Execute approval through Smart Account
+        const approveReceipt = await smartAccountContract.execute(
+            approveTx.target,
+            approveTx.value,
+            approveTx.data
+        );
+        await approveReceipt.wait();
+        console.log('USDT approved for Invoice Factory');
 
-      const executeData = smartAccountContract.interface.encodeFunctionData('execute', [
-        InvoiceFactoryAddress,  // Target contract (InvoiceFactory)
-        0n,                      // Value (in ETH), since we're paying in USDT
-        payInvoiceData           // Data to call payInvoiceById
-      ]);
+        // STEP 2: Prepare the payInvoiceById call
+        console.log("Preparing payInvoiceById call...");
+        const payInvoiceData = invoiceFactoryContract.interface.encodeFunctionData('payInvoiceById', [
+            invoiceId
+        ]);
+        console.log("Encoded payInvoiceById data:", payInvoiceData);
 
-      console.log("Encoded data for execute:", executeData);
+        // STEP 3: Create the execute call for payInvoiceById
+        const wrappedPaymentData = abiCoder.encode(
+            ['address', 'uint256', 'bytes'],
+            [InvoiceFactoryAddress, 0, payInvoiceData]
+        );
 
-      // Step 5: GasStation calls SmartAccount's execute function
-      const receipt = await gasStationContract.sponsorTransaction(
-        SmartAccountAddress,  // The SmartAccount paying the invoice
-        executeData,          // Data to execute the transaction (encoded execute function)
-        gasEstimate   // Estimated gas
-      );
+        // STEP 4: Execute the payment transaction through GasStation
+        console.log("Initiating sponsored payment transaction through GasStation...");
+        const paymentReceipt = await gasStationContract.sponsorTransaction(
+            SmartAccountAddress,
+            wrappedPaymentData,
+            2000000n
+        );
 
-      console.log('Invoice paid successfully with gas sponsorship:', receipt.transactionHash);
-      setTransactionHash(receipt.transactionHash);
+        console.log('Transaction submitted:', paymentReceipt.hash);
+        const confirmedReceipt = await paymentReceipt.wait();
+        console.log('Transaction confirmed:', confirmedReceipt);
 
-      return receipt;
+        // Update UI
+        setTransactionHash(paymentReceipt.hash);
+        return confirmedReceipt;
 
     } catch (error) {
-      console.error('Payment error:', error);
-      setError('Error paying invoice: ' + error.message);
-      throw error;
+        console.error('Payment error:', error);
+        setError(`Error paying invoice: ${error.message}`);
+        throw error;
     }
-  };
+};
+
+// Helper function to format error messages
+const formatError = (error) => {
+    if (error.code === 'ACTION_REJECTED') {
+        return 'Transaction rejected by user';
+    }
+    if (error.error?.message) {
+        return error.error.message;
+    }
+    return error.message || 'Unknown error occurred';
+};
   
 
   // View invoice function

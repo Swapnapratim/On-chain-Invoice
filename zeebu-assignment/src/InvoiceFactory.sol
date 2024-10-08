@@ -98,10 +98,13 @@ contract InvoiceFactory is Ownable { // IF: 0x38A68C29fdcb361696008d7019FdCfA54A
     function payInvoiceById(
         uint256 _id
     ) external {
+        console.log("invoice id: ", _id);
         require(_id > 0, "Invalid invoice ID");
         IInvoice.Invoice memory invoice = invoices[_id];
-
+        console.log("fetched invoice for the customer");
         bool success = s_usdt.transferFrom(invoice.customer, invoice.merchant, invoice.totalAmountIncludingTax);
+        console.log("transferred USDT to merchant");
+        console.logBool(success);
         if(success) {
             delete invoices[_id];
             emit InvoicePaid(invoice.customer, invoice.merchant, invoice.totalAmountIncludingTax);

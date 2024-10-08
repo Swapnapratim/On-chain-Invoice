@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
+import "forge-std/console.sol";
 
 contract GasStation {
     event GasSponsorship(address indexed user, uint256 gasUsed, address indexed targetContract, bytes data);
@@ -26,10 +27,14 @@ contract GasStation {
         bytes calldata data,
         uint256 gasLimit
     ) external {
+        console.log("inside sponsorTransaction");
         uint256 initialGas = gasleft();
-
+        console.log("initialGas", initialGas);
         // Execute the target function call
+        console.log("executing external call");
         (bool success, ) = targetContract.call{gas: gasLimit}(data);
+        console.logBool(success);
+        console.log("executed external call");
         require(success, "Transaction failed");
 
         // Calculate gas used
