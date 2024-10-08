@@ -43,6 +43,15 @@
    |
    | (9) Transaction complete
 ```
+
+## Project Structure: 
+Considering you are in the root directory of the project, the project structure is as follows:
+- interface: React frontend
+- src: Solidity Smart Contracts
+- src/interfaces: Smart Contract Interfaces
+- test: Foundry Unit tests
+- script: Deployment scripts for forked testings
+- foundry.toml: Foundry config file
 ## Local Production Requirements: 
 - RPC URL of desired test net
 - Private Key

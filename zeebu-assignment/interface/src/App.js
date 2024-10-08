@@ -13,10 +13,10 @@ const USDTAddress = "0x884ea8fb01727a643cbc9100b7eced0648f15963";
 const SmartAccountAddress = "0x6498d6059e5D42a20Af5500CB7eE3FF11a7162fD"; 
 
 // Admin private key
-const adminPrivateKey = 'e4c01e520d38ef61ddb5a75eb14d0aa014c8da0f615fbdece2c94cd4ae9be0c0';
+const adminPrivateKey = /* YOUR_ADMIN_PRIVATE_KEY */;
 
 // Alchemy Optimism Sepolia provider URL
-const alchemyProviderURL = "https://opt-sepolia.g.alchemy.com/v2/inBQ-e1vFDAlCRl4Fvec26vIYNLpBVul";
+const alchemyProviderURL = /* YOUR_OPTIMISM_SEPOLIA_PROVIDER_URL */;
 
 // Create an ethers provider with the Alchemy Optimism Sepolia URL
 const provider = new JsonRpcProvider(alchemyProviderURL);
